@@ -1,0 +1,115 @@
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:5.23.0
+    ports:
+      - "7475:7474"  # Neo4j Browser (mapped to 7475 to avoid conflict)
+      - "7688:7687"  # Bolt protocol (mapped to 7688 to avoid conflict)
+    environment:
+      - NEO4J_AUTH=neo4j/password123  # Change this password in production
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+      - NEO4J_dbms_security_procedures_allowlist=apoc.*
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    networks:
+      - knowledgecatalyst-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "password123", "RETURN 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8000"  # Mapped to 8001 to avoid conflict
+    volumes:
+      - ./backend/chunks:/app/chunks
+      - ./backend/merged_files:/app/merged_files
+    env_file:
+      - .env
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - NEO4J_URI=${NEO4J_URI}
+      - NEO4J_USERNAME=${NEO4J_USERNAME}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+      - NEO4J_DATABASE=${NEO4J_DATABASE}
+      - PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+      - MAX_TOKEN_CHUNK_SIZE=50000
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - knowledgecatalyst-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8502:8501"  # Mapped to 8502 to avoid conflict
+    depends_on:
+      - backend
+    env_file:
+      - .env
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - NEO4J_URI=${NEO4J_URI}
+      - NEO4J_USERNAME=${NEO4J_USERNAME}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+      - NEO4J_DATABASE=${NEO4J_DATABASE}
+      - BACKEND_URL=${BACKEND_URL}
+    restart: unless-stopped
+    networks:
+      - knowledgecatalyst-network
+
+  # ============================================================================
+  # Ollama (Optional) - Uncomment to run local LLM models
+  # ============================================================================
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   ports:
+  #     - "11434:11434"  # Ollama API
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   networks:
+  #     - knowledgecatalyst-network
+  #   restart: unless-stopped
+  #   # Uncomment below for GPU support (requires nvidia-docker)
+  #   # deploy:
+  #   #   resources:
+  #   #     reservations:
+  #   #       devices:
+  #   #         - driver: nvidia
+  #   #           count: 1
+  #   #           capabilities: [gpu]
+  #
+  # To use Ollama:
+  # 1. Uncomment the ollama service above and the ollama_data volume below
+  # 2. Start services: docker compose up -d
+  # 3. Pull a model: docker compose exec ollama ollama pull llama3
+  # 4. Update .env: LLM_MODEL_CONFIG_ollama_llama3="llama3,http://ollama:11434"
+  # 5. Set DEFAULT_DIFFBOT_CHAT_MODEL="ollama_llama3" in .env
+
+networks:
+  knowledgecatalyst-network:
+    driver: bridge
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  # ollama_data:  # Uncomment if using Ollama service
