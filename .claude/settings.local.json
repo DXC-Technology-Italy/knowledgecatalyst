@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(test:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix critical document extraction and multi-document querying bugs\n\n1. Fix chunk extraction bug in create_chunks.py \\(line 32\\)\n   - Changed default token_chunk_size from MAX_TOKEN_CHUNK_SIZE to 2000\n   - Previously: chunk_to_be_created = 50000 / 50000 = 1 chunk only\n   - Now: chunk_to_be_created = 50000 / 2000 = 25 chunks per document\n   - This ensures full document content is extracted, not just titles\n\n2. Fix multi-document querying in QA_integration.py\n   - Scale search_k based on number of selected documents\n   - Previously: Only top 5 chunks retrieved across all documents\n   - Now: Retrieves \\(5 * num_documents\\) chunks to ensure coverage\n   - This ensures queries about \"all documents\" actually use all documents\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.gnu.org)",
+      "Bash(curl:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "WebSearch",
+      "Bash(git push)",
+      "Bash(git checkout:*)",
+      "Bash(python -m py_compile:*)",
+      "Bash(git push:*)",
+      "Bash(docker compose:*)",
+      "Bash(python -m json.tool:*)",
+      "Bash(docker images:*)",
+      "Bash(git merge:*)",
+      "Bash(python:*)",
+      "Bash(git reset:*)",
+      "Bash(git branch:*)",
+      "Bash(find:*)"
+    ]
+  }
+}

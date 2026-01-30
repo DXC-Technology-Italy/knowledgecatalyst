@@ -468,7 +468,7 @@ This project builds upon concepts and components from the [Neo4j LLM Graph Build
 
 KnowledgeCatalyst is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). See [LICENSE](LICENSE) for the full license text.
 
-Copyright 2025 DXC Technology Company
+Copyright 2026 DXC Technology Company
 
 ## Support
 
