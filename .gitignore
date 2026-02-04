@@ -100,3 +100,7 @@ service-account.json
 
 # Local analysis documents
 GraphDB_Migration_Analysis.md
+TECHNICAL_ANALYSIS_GRAPH_GENERATION.md
+
+# Local test scripts
+start_test.bat
