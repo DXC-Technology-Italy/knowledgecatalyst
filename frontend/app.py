@@ -25,10 +25,9 @@ import json
 import os
 import pandas as pd
 from urllib.parse import urlparse
-import networkx as nx
-from pyvis.network import Network
 import streamlit.components.v1 as components
 import tempfile
+from cytoscape_graph import render_cytoscape_graph
 
 # --- Helper Functions (from your original code - kept for consistency) ---
 
@@ -287,126 +286,19 @@ def get_visible_nodes(all_nodes, all_relationships, expanded_node_ids, view_type
     return visible_nodes, visible_relationships
 
 
-def render_graph_visualization(nodes, relationships, view_type="data", expanded_nodes=None):
-    """Render graph visualization using PyVis"""
-    # Define color scheme for entity types
-    color_scheme = {
-        'Document': '#3b82f6',
-        'Chunk': '#8b5cf6',
-        'Person': '#10b981',
-        'Organization': '#f59e0b',
-        'Location': '#ef4444',
-        'Event': '#ec4899',
-        'Concept': '#06b6d4',
-        'Technology': '#8b5cf6',
-        '__Community__': '#64748b',
-        '__Entity__': '#94a3b8'
-    }
-
+def render_graph_visualization(nodes, relationships, view_type="data", expanded_nodes=None, layout="cola"):
+    """Render graph visualization using Cytoscape.js"""
     expanded_nodes = expanded_nodes or set()
 
-    # Create PyVis network
-    net = Network(height='700px', width='100%', bgcolor='#ffffff', font_color='#000000')
-
-    # Configure physics to be OFF (static layout)
-    net.set_options("""
-    {
-        "physics": {
-            "enabled": false
-        },
-        "interaction": {
-            "hover": true,
-            "navigationButtons": true,
-            "zoomView": true
-        },
-        "nodes": {
-            "font": {
-                "size": 14
-            }
-        },
-        "edges": {
-            "color": {
-                "color": "#888888",
-                "highlight": "#000000"
-            },
-            "smooth": {
-                "enabled": true,
-                "type": "continuous"
-            }
-        }
-    }
-    """)
-
-    # Build networkx graph for layout computation
-    G = nx.DiGraph()
-    node_id_map = {}
-
-    for node in nodes:
-        node_id = node.get('element_id', '')
-        G.add_node(node_id)
-        node_id_map[node_id] = node
-
-    for rel in relationships:
-        start_node = rel.get('start_node_element_id', '')
-        end_node = rel.get('end_node_element_id', '')
-        if start_node and end_node:
-            G.add_edge(start_node, end_node)
-
-    # Compute static layout using Kamada-Kawai (better distribution, less circular)
-    if len(G.nodes()) > 0:
-        pos = nx.kamada_kawai_layout(G, scale=1000)
-    else:
-        pos = {}
-
-    # Add nodes to PyVis network
-    for node in nodes:
-        node_id = node.get('element_id', '')
-        if node_id in pos:
-            labels = node.get('labels', [])
-            properties = node.get('properties', {})
-
-            # Get node label/caption
-            node_caption = properties.get('id') or properties.get('name') or properties.get('fileName') or (labels[0] if labels else 'Node')
-
-            # Get color based on first label
-            node_color = color_scheme.get(labels[0], '#94a3b8') if labels else '#94a3b8'
-
-            # Create hover title with properties
-            title = f"<b>{node_caption}</b><br>"
-            title += f"Type: {', '.join(labels)}<br>"
-            if node_id in expanded_nodes:
-                title += f"<i>Expanded</i><br>"
-            for key, value in properties.items():
-                if key not in ['embedding', 'text', 'summary'] and value:
-                    title += f"{key}: {str(value)[:100]}<br>"
-
-            # Node size - larger for expanded nodes
-            size = 25 if node_id in expanded_nodes else (20 if view_type == 'data' else 30)
-
-            # Add node with fixed position
-            x, y = pos[node_id]
-            net.add_node(
-                node_id,
-                label=str(node_caption)[:30],  # Truncate long labels
-                title=title,
-                color=node_color,
-                size=size,
-                x=float(x),
-                y=float(y),
-                physics=False  # Disable physics for this node
-            )
-
-    # Add edges to PyVis network
-    for rel in relationships:
-        start_node = rel.get('start_node_element_id', '')
-        end_node = rel.get('end_node_element_id', '')
-        rel_type = rel.get('type', '')
-
-        if start_node in pos and end_node in pos:
-            net.add_edge(start_node, end_node, title=rel_type)
-
-    # Generate HTML
-    html = net.generate_html()
+    # Generate Cytoscape.js HTML
+    html = render_cytoscape_graph(
+        nodes=nodes,
+        relationships=relationships,
+        layout=layout,
+        expanded_nodes=expanded_nodes,
+        view_type=view_type,
+        height=720
+    )
 
     # Render in Streamlit
     components.html(html, height=720, scrolling=False)
@@ -423,6 +315,7 @@ if 'connected' not in st.session_state:
     st.session_state.expanded_nodes = set()  # Track expanded nodes for graph viz
     st.session_state.all_graph_nodes = []  # Store complete node data
     st.session_state.all_graph_relationships = []  # Store complete relationship data
+    st.session_state.current_layout = 'cola'  # Default layout algorithm (Kamada-Kawai equivalent)
 
 st.title("Knowledge Graph Builder")
 
@@ -550,32 +443,33 @@ else:
             # Convert sources to DataFrame for display
             source_data = []
             for source in st.session_state.sources:
-                chunks = source.get("total_chunks", 0)
-                entities = source.get("nodeCount", 0)
+                    chunks = source.get("total_chunks", 0)
+                    entities = source.get("nodeCount", 0)
 
-                # Add status indicator
-                status = source.get("status", "")
-                if status == "Completed" and chunks > 1 and entities > 0:
-                    status_icon = "✅"
-                elif status == "Completed" and (chunks <= 1 or entities == 0):
-                    status_icon = "⚠️"
-                elif status == "Processing":
-                    status_icon = "🔄"
-                else:
-                    status_icon = "❓"
+                    # Add status indicator
+                    status = source.get("status", "")
+                    if status == "Completed" and chunks > 1 and entities > 0:
+                        status_icon = "✅"
+                    elif status == "Completed" and (chunks <= 1 or entities == 0):
+                        status_icon = "⚠️"
+                    elif status == "Processing":
+                        status_icon = "🔄"
+                    else:
+                        status_icon = "❓"
 
-                source_data.append({
-                    "": status_icon,
-                    "File Name": source.get("fileName", ""),
-                    "Status": status,
-                    "Chunks": chunks,
-                    "Entities": entities,
-                    "File Size": source.get("fileSize", ""),
-                    "File Type": source.get("fileType", "")
-                })
+                    source_data.append({
+                        "": status_icon,
+                        "File Name": source.get("fileName", ""),
+                        "Status": status,
+                        "Chunks": chunks,
+                        "Entities": entities,
+                        "File Size": source.get("fileSize", ""),
+                        "File Type": source.get("fileType", "")
+                    })
             df = pd.DataFrame(source_data)
 
-            st.dataframe(df, use_container_width=True)
+            # Use st.table for static display (no resize functionality)
+            st.table(df)
 
             # Show legend
             st.caption("✅ Ready | ⚠️ Low content extracted | 🔄 Processing | ❓ Unknown")
@@ -716,8 +610,27 @@ else:
     with tab3:  # Graph Visualization
         st.header("Graph Visualization")
 
-        # View type toggle
-        view_type = st.radio("View Type", ["Data", "Schema"], horizontal=True)
+        # View type and layout selection
+        col1, col2 = st.columns([1, 2])
+        with col1:
+            view_type = st.radio("View Type", ["Data", "Schema"], horizontal=True)
+        with col2:
+            layout_options = {
+                "cola": "Force-Directed (CoLA)",
+                "cose": "Spring Layout (CoSE)",
+                "dagre": "Hierarchical (Dagre)",
+                "circle": "Circular",
+                "random": "Random"
+            }
+            selected_layout = st.selectbox(
+                "Layout Algorithm",
+                options=list(layout_options.keys()),
+                format_func=lambda x: layout_options[x],
+                index=0,  # Default to cola (Kamada-Kawai equivalent)
+                key="layout_selector",
+                help="Choose the layout algorithm for graph visualization"
+            )
+            st.session_state.current_layout = selected_layout
 
         if view_type == "Data":
             # Fetch all documents for graph query
@@ -809,7 +722,8 @@ else:
                             visible_nodes,
                             visible_relationships,
                             view_type="data",
-                            expanded_nodes=st.session_state.expanded_nodes
+                            expanded_nodes=st.session_state.expanded_nodes,
+                            layout=st.session_state.current_layout
                         )
                 else:
                     st.info("No graph data found. Upload and extract documents first.")
@@ -817,6 +731,8 @@ else:
                 st.info("No documents found. Upload documents in the 'Upload & Extract' tab first.")
 
         else:  # Schema view
+            st.info("💡 **Schema View**: Select entity types to visualize their relationships in the knowledge graph.")
+
             with st.spinner("Loading schema..."):
                 schema_data = get_schema_data(
                     st.session_state.connection_info['uri'],
@@ -832,18 +748,182 @@ else:
                 nodes = data.get("nodes", [])
                 relationships = data.get("relationships", [])
 
-                # Show statistics
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.metric("Entity Types", len(nodes))
-                with col2:
-                    st.metric("Relationship Types", len(relationships))
-
                 if len(nodes) == 0:
                     st.info("No schema found. Extract documents first to build the knowledge graph schema.")
                 else:
-                    # Render schema
-                    render_graph_visualization(nodes, relationships, view_type="schema")
+                    # Extract entity type labels and create selection UI
+                    entity_types = []
+                    node_by_label = {}
+
+                    for node in nodes:
+                        labels = node.get('labels', [])
+                        if labels and not labels[0].startswith('__'):
+                            label = labels[0]
+                            entity_types.append(label)
+                            node_by_label[label] = node
+
+                    # Remove duplicates and sort
+                    entity_types = sorted(list(set(entity_types)))
+
+                    # Show total count
+                    st.metric("Total Entity Types Available", len(entity_types))
+
+                    if len(entity_types) == 0:
+                        st.warning("No entity types found. The schema only contains technical nodes.")
+                    else:
+                        # Entity type selector with default selection
+                        default_types = [t for t in ['Document', 'Person', 'Organization', 'Location', 'Concept']
+                                       if t in entity_types][:3]  # Default to 3 core types
+
+                        with st.expander("🔍 Select Entity Types to Visualize", expanded=True):
+                            # Select All / Clear buttons
+                            col1, col2, col3 = st.columns([1, 1, 2])
+                            with col1:
+                                if st.button("Select All"):
+                                    st.session_state.schema_selected_types = entity_types
+                            with col2:
+                                if st.button("Clear"):
+                                    st.session_state.schema_selected_types = []
+
+                            # Initialize session state if not exists
+                            if 'schema_selected_types' not in st.session_state:
+                                st.session_state.schema_selected_types = default_types
+
+                            selected_types = st.multiselect(
+                                "Choose entity types (start with 2-5 for best performance)",
+                                options=entity_types,
+                                default=st.session_state.schema_selected_types,
+                                key='entity_type_selector',
+                                help="Select which entity types you want to see in the graph. Start with a few to keep it lightweight."
+                            )
+
+                            # Update session state with current selection
+                            st.session_state.schema_selected_types = selected_types
+
+                            st.markdown("---")
+
+                            # Relationship control
+                            show_relationships = st.checkbox(
+                                "Show connections between entity types",
+                                value=False,
+                                help="Toggle to show/hide relationship edges. Keep OFF for fastest performance."
+                            )
+
+                            if show_relationships:
+                                # Extract unique relationship types
+                                relationship_types = sorted(list(set(r.get('type', 'unknown') for r in relationships)))
+
+                                # Relationship type selector
+                                col1, col2, col3 = st.columns([1, 1, 2])
+                                with col1:
+                                    if st.button("Select All Rels", key="select_all_rels"):
+                                        st.session_state.schema_selected_rel_types = relationship_types
+                                with col2:
+                                    if st.button("Clear Rels", key="clear_rels"):
+                                        st.session_state.schema_selected_rel_types = []
+
+                                # Initialize session state for relationship types
+                                if 'schema_selected_rel_types' not in st.session_state:
+                                    st.session_state.schema_selected_rel_types = relationship_types[:5]  # Default to first 5
+
+                                selected_rel_types = st.multiselect(
+                                    "Choose relationship types to display",
+                                    options=relationship_types,
+                                    default=st.session_state.schema_selected_rel_types,
+                                    key='relationship_type_selector',
+                                    help="Select which relationship types to show. Start with a few to avoid overload."
+                                )
+
+                                # Update session state
+                                st.session_state.schema_selected_rel_types = selected_rel_types
+
+                                max_relationships = st.slider(
+                                    "Maximum number of connections to show",
+                                    min_value=1,
+                                    max_value=100,
+                                    value=20,
+                                    step=1,
+                                    help="Limit the number of relationship edges to prevent overload"
+                                )
+                            else:
+                                max_relationships = 0
+                                selected_rel_types = []
+
+                            st.markdown("---")
+
+                            col_reset, col_info = st.columns([1, 3])
+                            with col_reset:
+                                if st.button("Clear Selection"):
+                                    st.rerun()
+                            with col_info:
+                                if show_relationships:
+                                    st.caption(f"💡 {len(selected_types)} entity types | Connections: ON")
+                                else:
+                                    st.caption(f"💡 {len(selected_types)} entity types | Connections: OFF")
+
+                        if not selected_types:
+                            st.info("👆 Select entity types above to visualize the schema")
+                        else:
+                            # Filter nodes to only selected types
+                            selected_nodes = [node_by_label[label] for label in selected_types if label in node_by_label]
+
+                            # Filter and DEDUPLICATE relationships based on user settings
+                            selected_rels = []
+
+                            if show_relationships and max_relationships > 0:
+                                selected_node_ids = {n.get('element_id') for n in selected_nodes}
+                                seen_connections = set()
+
+                                for r in relationships:
+                                    if len(selected_rels) >= max_relationships:
+                                        break  # Stop at max limit
+
+                                    rel_type = r.get('type', 'unknown')
+
+                                    # Filter by selected relationship types
+                                    if rel_type not in selected_rel_types:
+                                        continue
+
+                                    start_id = r.get('start_node_element_id')
+                                    end_id = r.get('end_node_element_id')
+
+                                    if start_id in selected_node_ids and end_id in selected_node_ids:
+                                        # Create unique key for this connection (bidirectional)
+                                        connection_key = tuple(sorted([start_id, end_id]))
+
+                                        if connection_key not in seen_connections:
+                                            seen_connections.add(connection_key)
+                                            # Keep the original relationship type label
+                                            selected_rels.append(r)
+
+                            # Show statistics
+                            col1, col2, col3 = st.columns(3)
+                            with col1:
+                                st.metric("Entity Types", len(selected_nodes))
+                            with col2:
+                                if show_relationships:
+                                    rel_type_count = len(selected_rel_types) if 'selected_rel_types' in locals() else 0
+                                    st.metric("Relationships", f"{len(selected_rels)}/{max_relationships}")
+                                else:
+                                    st.metric("Relationships", "Hidden")
+                            with col3:
+                                if show_relationships and 'selected_rel_types' in locals():
+                                    st.metric("Rel Types Selected", len(selected_rel_types))
+                                else:
+                                    st.metric("Rel Types", "-")
+                            with col3:
+                                # Calculate load based on nodes and relationships
+                                total_elements = len(selected_nodes) + len(selected_rels)
+                                if total_elements <= 10:
+                                    st.success("✓ Lightweight")
+                                elif total_elements <= 25:
+                                    st.warning("⚠ Medium")
+                                else:
+                                    st.error("⚠ Heavy")
+
+                            # Render schema with selected types only
+                            schema_layout = "circle" if st.session_state.current_layout in ["cola", "dagre"] else st.session_state.current_layout
+                            render_graph_visualization(selected_nodes, selected_rels, view_type="schema", layout=schema_layout)
             else:
                 st.error("Unexpected response format from backend")
 
