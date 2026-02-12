@@ -101,6 +101,14 @@ service-account.json
 # Local analysis documents
 GraphDB_Migration_Analysis.md
 TECHNICAL_ANALYSIS_GRAPH_GENERATION.md
+COMPARISON_WITH_LLM_GRAPH_BUILDER.md
+DYNAMIC_ENTITY_EXTRACTION.md
 
 # Local test scripts
 start_test.bat
+
+# Local Claude settings
+.claude/settings.local.json
+
+# Local presentations and documents
+DXC_FOSS_Guild_Presentation.md
