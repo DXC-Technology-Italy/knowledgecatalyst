@@ -551,16 +551,6 @@ For questions, issues, or feedback:
 - Open an issue in the GitHub repository
 - Contact: guglielmo.piacentini@dxc.com
 
-## Sponsorship
-
-This open-source release is sponsored by:
-- Matt Kay (CES Europe, Pre-Sales & Growth Strategy Lead)
-- Karim Jeribi (Europe CES Leader)
-- Remo Dentato (CES Europe Manager for Custom Applications)
-- Nicola Mangia (DXC Italy Country Manager)
-
-Supported by Franco Fiorese (Industry Managing Partner)
-
 ---
 
 **Note**: KnowledgeCatalyst is designed for enterprise and public sector applications, with a focus on transparency, security, and compliance with open-source best practices.
