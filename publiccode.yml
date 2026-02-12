@@ -1,0 +1,215 @@
+# This repository adheres to the publiccode.yml standard by including this
+# metadata file that makes public software easily discoverable.
+# More info at https://github.com/italia/publiccode.yml
+
+publiccodeYmlVersion: '0.4'
+
+name: KnowledgeCatalyst
+applicationSuite: Digital Public Administration Tools
+url: 'https://github.com/DXC-Technology-Italy/knowledgecatalyst'
+landingURL: 'https://github.com/DXC-Technology-Italy/knowledgecatalyst'
+
+releaseDate: '2026-02-12'
+softwareVersion: '1.2'
+
+developmentStatus: stable
+
+softwareType: standalone/web
+
+platforms:
+  - web
+  - linux
+  - windows
+  - mac
+
+categories:
+  - knowledge-management
+  - data-analytics
+  - data-visualization
+  - ai
+
+usedBy:
+  - Ministero della Cultura (MiC)
+
+description:
+  en:
+    localisedName: KnowledgeCatalyst
+    genericName: Knowledge Graph RAG System
+
+    shortDescription: >-
+      Open-source knowledge base system built on generative AI and Graph RAG
+      technology for intelligent document retrieval.
+
+    longDescription: >-
+      KnowledgeCatalyst is an open-source knowledge base system that transforms
+      unstructured documents into structured knowledge graphs using Graph RAG
+      (Retrieval-Augmented Generation) technology. Built on Neo4j's graph database,
+      it enables sophisticated question-answering capabilities through graph-based
+      retrieval.
+
+
+      Originally developed for the Italian Ministry of Culture's D.PaC (Digitalization
+      of Public Administration in Culture) platform, KnowledgeCatalyst serves as
+      a conversational AI assistant to help digitalization operators navigate complex
+      platform documentation, manuals, and FAQs.
+
+
+      The system features a pure Python architecture with Streamlit frontend and
+      FastAPI backend, supporting local deployment with Ollama for complete data
+      sovereignty. It includes advanced graph visualization with Cytoscape.js,
+      dynamic entity extraction, and multi-LLM support (OpenAI, Azure, Anthropic,
+      Google Gemini, AWS Bedrock, and local models via Ollama).
+
+
+      Key capabilities include multi-source document ingestion (local files, S3,
+      GCS, web pages, Wikipedia, YouTube), automated knowledge graph construction,
+      intelligent querying with hybrid search, and an intuitive web interface with
+      interactive graph visualization.
+
+    documentation: 'https://github.com/DXC-Technology-Italy/knowledgecatalyst/blob/main/README.md'
+
+    apiDocumentation: 'https://github.com/DXC-Technology-Italy/knowledgecatalyst/blob/main/README.md#api-usage'
+
+    features:
+      - Multi-source document ingestion (local files, S3, GCS, web, Wikipedia, YouTube)
+      - Automatic entity extraction and relationship mapping with dynamic schema
+      - Support for multiple LLM providers (OpenAI, Azure, Anthropic, Google Gemini, AWS Bedrock)
+      - Local LLM support with Ollama for complete data sovereignty
+      - Automated knowledge graph construction with Neo4j
+      - Community detection for hierarchical knowledge organization
+      - Graph-based retrieval for contextually relevant answers
+      - Hybrid search combining graph traversal and vector embeddings
+      - Advanced interactive graph visualization with Cytoscape.js (5 layout algorithms)
+      - Streamlit-based frontend with REST API for programmatic access
+      - Docker Compose deployment for simplified infrastructure
+      - Support for Italian language optimization for government documentation
+      - Document management with granular deletion control
+      - Privacy-first architecture with fully local operation capability
+
+    screenshots:
+      -
+
+  it:
+    localisedName: KnowledgeCatalyst
+    genericName: Sistema RAG con Grafi di Conoscenza
+
+    shortDescription: >-
+      Sistema open-source per basi di conoscenza basato su IA generativa e
+      tecnologia Graph RAG per il recupero intelligente di documenti.
+
+    longDescription: >-
+      KnowledgeCatalyst è un sistema open-source per basi di conoscenza che
+      trasforma documenti non strutturati in grafi di conoscenza strutturati
+      utilizzando la tecnologia Graph RAG (Retrieval-Augmented Generation).
+      Basato sul database a grafi Neo4j, consente sofisticate capacità di
+      risposta alle domande attraverso il recupero basato su grafi.
+
+
+      Originariamente sviluppato per la piattaforma D.PaC (Digitalizzazione della
+      Pubblica Amministrazione nella Cultura) del Ministero della Cultura italiano,
+      KnowledgeCatalyst serve come assistente AI conversazionale per aiutare gli
+      operatori della digitalizzazione a navigare la complessa documentazione della
+      piattaforma, i manuali e le FAQ.
+
+
+      Il sistema presenta un'architettura Python pura con frontend Streamlit e
+      backend FastAPI, supportando il deployment locale con Ollama per la completa
+      sovranità dei dati. Include visualizzazione avanzata dei grafi con Cytoscape.js,
+      estrazione dinamica delle entità e supporto multi-LLM (OpenAI, Azure, Anthropic,
+      Google Gemini, AWS Bedrock e modelli locali tramite Ollama).
+
+
+      Le capacità chiave includono l'ingestione di documenti da più fonti (file locali,
+      S3, GCS, pagine web, Wikipedia, YouTube), costruzione automatica di grafi di
+      conoscenza, interrogazione intelligente con ricerca ibrida e un'interfaccia web
+      intuitiva con visualizzazione interattiva dei grafi.
+
+    documentation: 'https://github.com/DXC-Technology-Italy/knowledgecatalyst/blob/main/README.md'
+
+    apiDocumentation: 'https://github.com/DXC-Technology-Italy/knowledgecatalyst/blob/main/README.md#api-usage'
+
+    features:
+      - Ingestione documenti da più fonti (file locali, S3, GCS, web, Wikipedia, YouTube)
+      - Estrazione automatica di entità e mappatura delle relazioni con schema dinamico
+      - Supporto per più provider LLM (OpenAI, Azure, Anthropic, Google Gemini, AWS Bedrock)
+      - Supporto LLM locale con Ollama per completa sovranità dei dati
+      - Costruzione automatica di grafi di conoscenza con Neo4j
+      - Rilevamento di comunità per organizzazione gerarchica della conoscenza
+      - Recupero basato su grafi per risposte contestualmente rilevanti
+      - Ricerca ibrida che combina attraversamento dei grafi ed embeddings vettoriali
+      - Visualizzazione interattiva avanzata dei grafi con Cytoscape.js (5 algoritmi di layout)
+      - Frontend Streamlit con API REST per accesso programmatico
+      - Deployment Docker Compose per infrastruttura semplificata
+      - Supporto per ottimizzazione lingua italiana per documentazione governativa
+      - Gestione documenti con controllo granulare della cancellazione
+      - Architettura privacy-first con capacità di operazione completamente locale
+
+legal:
+  license: AGPL-3.0-or-later
+  mainCopyrightOwner: DXC Technology Company
+  repoOwner: DXC Technology Italy
+  authorsFile: 'https://github.com/DXC-Technology-Italy/knowledgecatalyst/blob/main/README.md#key-contributors'
+
+maintenance:
+  type: internal
+
+  contacts:
+    - name: Guglielmo Piacentini
+      email: guglielmo.piacentini@dxc.com
+      affiliation: DXC Technology Company
+
+localisation:
+  localisationReady: true
+  availableLanguages:
+    - en
+    - it
+
+dependsOn:
+  open:
+    - name: Neo4j
+      versionMin: '5.18'
+      optional: false
+    - name: Python
+      versionMin: '3.9'
+      optional: false
+    - name: Docker
+      optional: false
+    - name: Ollama
+      optional: true
+    - name: Streamlit
+      optional: false
+    - name: FastAPI
+      optional: false
+
+intendedAudience:
+  scope:
+    - culture
+    - education
+    - government
+    - research
+
+  countries:
+    - it
+
+  unsupportedCountries: []
+
+it:
+  riuso:
+    codiceIPA: dxc_tech
+
+  conforme:
+    lineeGuidaDesign: false
+    modelloInteroperabilita: false
+    misureMinimeSicurezza: true
+    gdpr: true
+
+  piattaforme:
+    spid: false
+    cie: false
+    anpr: false
+    pagopa: false
+    io: false
+
+  designKit:
+    seo: false
+    mainDesigner: DXC Technology Data and AI Team
